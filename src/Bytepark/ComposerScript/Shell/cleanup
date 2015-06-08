@@ -1,0 +1,4 @@
+cd $COMPOSER_DIR
+rm -rf typo3
+rm -f index.php
+rm -rf t3lib

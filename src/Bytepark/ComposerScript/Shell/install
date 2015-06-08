@@ -1,0 +1,35 @@
+cd $COMPOSER_DIR
+rm -rf typo3
+rm -f index.php
+rm -rf t3lib
+if [ -d typo3conf ]; then
+	mv typo3conf typo3_src/typo3conf
+fi
+cd typo3_src
+
+#t3admin fix
+if [ ! -f .t3admin_replaced ]; then
+	find ./index.php ./t3lib ./typo3 ./_.htaccess -type f -print0 | xargs -0 -n 1 sed -i -e "/typo3.org/b;/typo3lang/b;/typo3v4/b;/typo3_6/b;/typo3_src-/b;/typo3temp/b;/typo3conf/b;/typo3logo/b;/typo3cms/b;/typo3pageModule/b;/typo3\.log/b;/typo3-the-cms/b;/typo3-logo/b;/typo3\.png/b; s/typo3\//t3admin/g; s/\/typo3/\/t3admin/g"
+	find ./_.htaccess -type f -print0 | xargs -0 -n 1 sed -i -e "s/(typo3/(t3admin/g"
+	touch .t3admin_replaced
+fi
+
+
+cd ..
+rm web/index.php
+rm web/t3admin
+rm web/t3lib
+rm -rf web/typo3temp
+mkdir web/typo3temp
+ln -s "typo3_src/index.php" "web/index.php"
+ln -s ../typo3_src/typo3 web/t3admin
+ln -s ../typo3_src/t3lib web/t3lib
+for EXT in typo3_src/typo3conf/ext/*; do
+	EXTNAME=$(echo $EXT | sed -e "s/typo3_src\/typo3conf\/ext\///g")
+	rm web/typo3conf/ext/$EXTNAME
+	ln -s ../../../typo3_src/typo3conf/ext/$EXTNAME web/typo3conf/ext/$EXTNAME
+done
+rm -f web/_.htaccess
+if [ -f typo3_src/_.htaccess ]; then
+	cp typo3_src/_.htaccess web/_.htaccess
+fi
